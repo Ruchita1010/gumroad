@@ -1,9 +1,9 @@
-import cx from "classnames";
 import * as React from "react";
 import { CSSProperties } from "react";
 
 import { isOpenTuple } from "$app/utils/array";
 import { assert } from "$app/utils/assert";
+import { classNames } from "$app/utils/classNames";
 
 import { Button } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
@@ -35,6 +35,9 @@ type NestedMenuProps = {
   footer?: React.ReactNode;
   menuTop?: string;
 } & React.AriaAttributes;
+type ItemProps = {
+  children: React.ReactNode;
+} & React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
 export const NestedMenu = ({
   type,
@@ -78,13 +81,11 @@ export const NestedMenu = ({
 
   return (
     <MenuContext.Provider value={menuContent}>
-      <div className="nested-menu">
-        {type === "menubar" ? (
-          <Menubar moreLabel={moreLabel} {...extraAriaAttrs} />
-        ) : (
-          <OverlayMenu buttonLabel={buttonLabel} footer={footer} menuTop={menuTop} {...extraAriaAttrs} />
-        )}
-      </div>
+      {type === "menubar" ? (
+        <Menubar moreLabel={moreLabel} {...extraAriaAttrs} />
+      ) : (
+        <OverlayMenu buttonLabel={buttonLabel} footer={footer} menuTop={menuTop} {...extraAriaAttrs} />
+      )}
     </MenuContext.Provider>
   );
 };
@@ -123,7 +124,13 @@ const Menubar = ({ moreLabel, ...extraAriaAttrs }: { moreLabel?: string | undefi
   const menubarItems = itemsUnderMore?.length ? topLevelMenuItems.slice(0, -itemsUnderMore.length) : topLevelMenuItems;
   const moreMenuItem = { key: "more#key", label: "More", children: itemsUnderMore ?? [], parent: null };
   return (
-    <div ref={parentRef} role="menubar" aria-busy={itemsUnderMore === null} {...extraAriaAttrs}>
+    <div
+      ref={parentRef}
+      role="menubar"
+      aria-busy={itemsUnderMore === null}
+      className="grid auto-cols-max grid-flow-col items-center aria-busy:overflow-x-hidden"
+      {...extraAriaAttrs}
+    >
       {menubarItems.map((menuItem) => (
         <MenubarItem
           key={menuItem.key}
@@ -230,14 +237,18 @@ const MenubarItem = ({
 
   return menuItem.children.length > 0 ? (
     <div
-      className={cx("popover", { expanded: menuOpen })}
+      className={classNames("popover", { expanded: menuOpen })}
       ref={ref}
       onMouseEnter={() => handleToggleMenu(true)}
       onMouseLeave={closeAfterDelay}
     >
       <a
         href={menuItem.href ?? "#"}
-        className={cx("pill button", { expandable: showExpandableIcon })}
+        className={classNames(
+          "pill button",
+          { "border-transparent! bg-transparent! text-inherit!": !isHighlighted },
+          { expandable: showExpandableIcon },
+        )}
         role="menuitem"
         aria-current={isHighlighted}
         aria-haspopup="menu"
@@ -267,7 +278,11 @@ const MenubarItem = ({
     <div onMouseEnter={() => handleToggleMenu(true)} onMouseLeave={() => handleToggleMenu(false)}>
       <a
         href={menuItem.href ?? "#"}
-        className={cx("pill button", { expandable: showExpandableIcon })}
+        className={classNames(
+          "pill button",
+          { "border-transparent! bg-transparent! text-inherit!": !isHighlighted },
+          { expandable: showExpandableIcon },
+        )}
         role="menuitem"
         aria-current={isHighlighted}
         {...extraAriaAttrs}
@@ -305,12 +320,13 @@ const OverlayMenu = ({
         aria-expanded={menuOpen}
         aria-haspopup="menu"
         aria-label={buttonLabel ?? "Open Menu"}
+        className="bg-background!"
         {...extraAriaAttrs}
       >
         <Icon name="filter" />
       </Button>
-      <div className="backdrop" hidden={!menuOpen} style={menuTop ? { top: menuTop } : undefined}>
-        <button className="close" onClick={() => setMenuOpen(false)} aria-label="Close Menu">
+      <div className="fixed inset-0 z-20 bg-black/80" hidden={!menuOpen} style={menuTop ? { top: menuTop } : undefined}>
+        <button className="absolute top-4 right-4 text-xl" onClick={() => setMenuOpen(false)} aria-label="Close Menu">
           <Icon name="x" className="text-white" />
         </button>
         <ItemsList
@@ -352,11 +368,17 @@ const ItemsList = ({
   React.useEffect(() => setDisplayedItem(initialMenuItem), [open]);
 
   return (
-    <div id={menuId} style={displayedItem.css} role="menu" aria-label={displayedItem.label} className="overflow-hidden">
+    <div
+      id={menuId}
+      style={displayedItem.css}
+      role="menu"
+      aria-label={displayedItem.label}
+      className="flex h-full w-80 flex-col overflow-x-hidden overflow-y-auto rounded-none! border-none! p-0! shadow-none! lg:w-48 lg:overflow-y-hidden lg:rounded-sm!"
+    >
       {footer}
 
       {displayedItem.key !== initialMenuItem.key ? (
-        <a
+        <ItemsListItem
           key={`back${displayedItem.key}`}
           href={displayedItem.parent?.href ?? "#"}
           onClick={(e) => {
@@ -364,20 +386,18 @@ const ItemsList = ({
             setDisplayedItem(displayedItem.parent ?? initialMenuItem);
             e.preventDefault();
           }}
-          style={{ justifyContent: "normal", gap: "var(--spacer-2)" }}
-          role="menuitem"
         >
           <Icon name="outline-cheveron-left" />
           <span>Back</span>
-        </a>
+        </ItemsListItem>
       ) : null}
       {displayedItem.key !== initialMenuItem.key || showAllItemOnInitialList ? (
-        <a href={displayedItem.href} onClick={(e) => onSelectItem?.(displayedItem, e)} role="menuitem">
+        <ItemsListItem href={displayedItem.href} onClick={(e) => onSelectItem?.(displayedItem, e)}>
           All {displayedItem.label}
-        </a>
+        </ItemsListItem>
       ) : null}
       {displayedItem.children.map((item) => (
-        <a
+        <ItemsListItem
           key={item.key}
           href={item.href}
           onClick={(e) => {
@@ -387,13 +407,26 @@ const ItemsList = ({
               setDisplayedItem(item);
             } else return onSelectItem?.(item, e);
           }}
-          role="menuitem"
           aria-haspopup={item.children.length ? "menu" : undefined}
+          className={item.children.length ? "flex! items-center justify-between no-underline" : undefined}
         >
           {item.label}
-        </a>
+          {item.children.length > 0 && <Icon name="outline-cheveron-right" className="ml-2 shrink-0" />}
+        </ItemsListItem>
       ))}
-      {displayedItem.image ? <img src={displayedItem.image} className="w-full translate-x-6 translate-y-6" /> : null}
+      {displayedItem.image ? (
+        <img src={displayedItem.image} className="mt-auto w-full translate-x-6 translate-y-6" />
+      ) : null}
     </div>
   );
 };
+
+const ItemsListItem = ({ className, children, ...props }: ItemProps) => (
+  <a
+    className={classNames("shrink-0 p-4! whitespace-normal! hover:bg-foreground! hover:text-background!", className)}
+    role="menuitem"
+    {...props}
+  >
+    {children}
+  </a>
+);
