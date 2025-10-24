@@ -378,7 +378,7 @@ const ItemsList = ({
       {footer}
 
       {displayedItem.key !== initialMenuItem.key ? (
-        <ItemsListItem
+        <Item
           key={`back${displayedItem.key}`}
           href={displayedItem.parent?.href ?? "#"}
           onClick={(e) => {
@@ -389,15 +389,15 @@ const ItemsList = ({
         >
           <Icon name="outline-cheveron-left" />
           <span>Back</span>
-        </ItemsListItem>
+        </Item>
       ) : null}
       {displayedItem.key !== initialMenuItem.key || showAllItemOnInitialList ? (
-        <ItemsListItem href={displayedItem.href} onClick={(e) => onSelectItem?.(displayedItem, e)}>
+        <Item href={displayedItem.href} onClick={(e) => onSelectItem?.(displayedItem, e)}>
           All {displayedItem.label}
-        </ItemsListItem>
+        </Item>
       ) : null}
       {displayedItem.children.map((item) => (
-        <ItemsListItem
+        <Item
           key={item.key}
           href={item.href}
           onClick={(e) => {
@@ -412,7 +412,7 @@ const ItemsList = ({
         >
           {item.label}
           {item.children.length > 0 && <Icon name="outline-cheveron-right" className="ml-2 shrink-0" />}
-        </ItemsListItem>
+        </Item>
       ))}
       {displayedItem.image ? (
         <img src={displayedItem.image} className="mt-auto w-full translate-x-6 translate-y-6" />
@@ -421,7 +421,7 @@ const ItemsList = ({
   );
 };
 
-const ItemsListItem = ({ className, children, ...props }: ItemProps) => (
+const Item = ({ className, children, ...props }: ItemProps) => (
   <a
     className={classNames("shrink-0 p-4! whitespace-normal! hover:bg-foreground! hover:text-background!", className)}
     role="menuitem"
