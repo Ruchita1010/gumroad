@@ -1,3 +1,4 @@
+import * as Dialog from "@radix-ui/react-dialog";
 import * as React from "react";
 import { CSSProperties } from "react";
 
@@ -9,6 +10,7 @@ import { Button } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Icon } from "$app/components/Icons";
 import { useDropdownPosition } from "$app/components/Popover";
+import { Sheet } from "$app/components/ui/Sheet";
 import { useIsOnTouchDevice } from "$app/components/useIsOnTouchDevice";
 import { useOnOutsideClick } from "$app/components/useOnOutsideClick";
 import { useWindowDimensions } from "$app/components/useWindowDimensions";
@@ -325,10 +327,14 @@ const OverlayMenu = ({
       >
         <Icon name="filter" />
       </Button>
-      <div className="fixed inset-0 z-20 bg-black/80" hidden={!menuOpen} style={menuTop ? { top: menuTop } : undefined}>
-        <button className="absolute top-4 right-4 text-xl" onClick={() => setMenuOpen(false)} aria-label="Close Menu">
-          <Icon name="x" className="text-white" />
-        </button>
+
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen} className="bg-backdrop p-0">
+        <div className="absolute top-4 right-4 z-40">
+          <Dialog.Close aria-label="Close Menu">
+            <Icon name="x" className="text-xl text-white" />
+          </Dialog.Close>
+        </div>
+
         <ItemsList
           menuId={overlayMenuUID}
           menuItem={{
@@ -344,7 +350,7 @@ const OverlayMenu = ({
             onSelectItem?.(newSelectedItem, e);
           }}
         />
-      </div>
+      </Sheet>
     </>
   );
 };
