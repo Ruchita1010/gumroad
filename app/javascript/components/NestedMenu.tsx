@@ -320,7 +320,7 @@ const OverlayMenu = ({
         aria-expanded={menuOpen}
         aria-haspopup="menu"
         aria-label={buttonLabel ?? "Open Menu"}
-        className="bg-background!"
+        className="bg-background! text-foreground! hover:shadow!"
         {...extraAriaAttrs}
       >
         <Icon name="filter" />
