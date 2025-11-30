@@ -243,25 +243,18 @@ const MenubarItem = ({
       onMouseEnter={() => handleToggleMenu(true)}
       onMouseLeave={closeAfterDelay}
     >
-      <a
-        href={menuItem.href ?? "#"}
-        className={classNames(
-          "pill button",
-          { "border-transparent! bg-transparent! text-inherit!": !isHighlighted },
-          { expandable: showExpandableIcon },
-        )}
-        role="menuitem"
-        aria-current={isHighlighted}
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
-        aria-controls={uid}
+      <MenuItemLink
+        menuItem={menuItem}
+        isHighlighted={isHighlighted}
+        showExpandableIcon={showExpandableIcon}
         onClick={(e) => {
           if (isOnTouchDevice) e.preventDefault();
           else onSelectItem?.(menuItem, e);
         }}
-      >
-        {menuItem.label}
-      </a>
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        aria-controls={uid}
+      />
       <div className="dropdown" hidden={!menuOpen} style={dropdownPosition}>
         <ItemsList
           menuId={uid}
@@ -277,26 +270,47 @@ const MenubarItem = ({
     </div>
   ) : (
     <div onMouseEnter={() => handleToggleMenu(true)} onMouseLeave={() => handleToggleMenu(false)}>
-      <a
-        href={menuItem.href ?? "#"}
-        className={classNames(
-          "pill button",
-          { "border-transparent! bg-transparent! text-inherit!": !isHighlighted },
-          { expandable: showExpandableIcon },
-        )}
-        role="menuitem"
-        aria-current={isHighlighted}
-        {...extraAriaAttrs}
+      <MenuItemLink
+        menuItem={menuItem}
+        isHighlighted={isHighlighted}
+        showExpandableIcon={showExpandableIcon}
         onClick={(e) => {
           onHighlightIn();
           onSelectItem?.(menuItem, e);
         }}
-      >
-        {menuItem.label}
-      </a>
+        {...extraAriaAttrs}
+      />
     </div>
   );
 };
+
+const MenuItemLink = ({
+  menuItem,
+  isHighlighted,
+  showExpandableIcon,
+  onClick,
+  ...extraAriaAttrs
+}: {
+  menuItem: MenuItemWithChildren;
+  isHighlighted: boolean;
+  showExpandableIcon: boolean | undefined;
+  onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+} & React.AriaAttributes) => (
+  <a
+    href={menuItem.href ?? "#"}
+    className={classNames(
+      "pill button",
+      { "border-transparent! bg-transparent! text-inherit!": !isHighlighted },
+      { expandable: showExpandableIcon },
+    )}
+    role="menuitem"
+    aria-current={isHighlighted}
+    onClick={onClick}
+    {...extraAriaAttrs}
+  >
+    {menuItem.label}
+  </a>
+);
 
 const OverlayMenu = ({
   buttonLabel,
