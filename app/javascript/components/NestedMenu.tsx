@@ -325,7 +325,11 @@ const OverlayMenu = ({
         <Icon name="filter" />
       </Button>
 
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen} className="bg-backdrop p-0">
+      <Sheet
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        className="bg-backdrop p-0 pr-12 md:left-0 md:w-full md:border-l-0"
+      >
         <div className="absolute top-4 right-4 z-40">
           <Dialog.Close aria-label="Close Menu">
             <Icon name="x" className="text-xl text-white" />
